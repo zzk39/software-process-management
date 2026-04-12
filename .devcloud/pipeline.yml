@@ -1,0 +1,59 @@
+# DevCloud 流水线：提交 → 构建 → 测试 → 部署
+# 在 DevCloud 控制台 → 流水线 → 新建流水线，按下图连线：
+
+#   ┌────────┐   ┌──────────┐   ┌──────────┐   ┌──────────┐
+#   │  代码  │ → │ 编译构建 │ → │ 自动测试 │ → │  部署    │
+#   │  仓库  │   │ build.yml│   │ pytest   │   │deploy.yml│
+#   └────────┘   └──────────┘   └──────────┘   └──────────┘
+
+name: study-seat-pipeline
+
+triggers:
+  - type: code_push
+    branch: main
+  - type: code_push
+    branch: develop
+  - type: pull_request
+
+stages:
+  - name: 编译构建
+    job: build
+    config: .devcloud/build.yml
+
+  - name: 自动化测试
+    job: test
+    depends_on: [编译构建]
+    steps:
+      - type: pytest_report
+        path: backend/report.xml
+      - type: coverage_threshold
+        min: 60
+
+  - name: 代码质量（可选）
+    job: code_check
+    steps:
+      - type: pylint
+        path: backend/app
+      - type: eslint
+        path: admin-web/src
+      - type: eslint
+        path: student-web/src
+
+  - name: 部署到测试环境
+    job: deploy_test
+    depends_on: [自动化测试]
+    when: branch == 'develop'
+    config: .devcloud/deploy.yml
+    env:
+      BACKEND_HOST: test.studyseat.internal
+      WEB_HOST: test.studyseat.internal
+
+  - name: 部署到生产环境
+    job: deploy_prod
+    depends_on: [自动化测试]
+    when: branch == 'main'
+    approval: 需要组长审批
+    config: .devcloud/deploy.yml
+    env:
+      BACKEND_HOST: prod.studyseat.internal
+      WEB_HOST: prod.studyseat.internal

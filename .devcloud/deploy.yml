@@ -1,0 +1,46 @@
+# DevCloud 部署任务配置
+# 在 DevCloud 控制台 → 部署 → 选择"主机部署"或"容器部署"，参考以下步骤：
+
+name: study-seat-deploy
+stages:
+  - name: 拉取产物
+    action: download_artifact
+
+  - name: 部署后端
+    action: shell
+    target_host: ${BACKEND_HOST}
+    script: |
+      tar -xzf release.tar.gz -C /opt/
+      cd /opt/release/backend
+      python3 -m venv .venv
+      . .venv/bin/activate
+      pip install -r requirements.txt
+      # 如已存在数据库则跳过 seed
+      [ -f study_seat.db ] || python -m app.seed
+      # 重启 systemd 服务（假设已配置 studyseat.service）
+      sudo systemctl restart studyseat
+
+  - name: 部署前端（管理端）
+    action: shell
+    target_host: ${WEB_HOST}
+    script: |
+      sudo cp -r /opt/release/admin-web/* /var/www/admin/
+      sudo nginx -s reload
+
+  - name: 部署前端（学生端）
+    action: shell
+    target_host: ${WEB_HOST}
+    script: |
+      sudo cp -r /opt/release/student-web/* /var/www/student/
+      sudo nginx -s reload
+
+  - name: 健康检查
+    action: shell
+    script: |
+      for i in {1..10}; do
+        if curl -sf http://${BACKEND_HOST}:8000/api/health; then
+          echo "✅ 后端就绪"; exit 0
+        fi
+        sleep 2
+      done
+      echo "❌ 健康检查失败"; exit 1

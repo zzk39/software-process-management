@@ -1,0 +1,20 @@
+* { box-sizing: border-box; }
+body { margin: 0; font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: #f4f6f8; color: #222; }
+a { color: #1677ff; text-decoration: none; }
+button { cursor: pointer; border: none; background: #1677ff; color: #fff; padding: 6px 14px; border-radius: 4px; }
+button.secondary { background: #e5e7eb; color: #333; }
+input { padding: 6px 8px; border: 1px solid #d9d9d9; border-radius: 4px; }
+table { width: 100%; border-collapse: collapse; background: #fff; }
+th, td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
+.layout { display: flex; min-height: 100vh; }
+.sidebar { width: 200px; background: #001529; color: #fff; padding: 20px 0; }
+.sidebar h2 { margin: 0 20px 20px; font-size: 16px; }
+.sidebar a { display: block; color: #ccc; padding: 10px 20px; }
+.sidebar a.router-link-active { background: #1677ff; color: #fff; }
+.main { flex: 1; padding: 24px; }
+.card { background: #fff; padding: 20px; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,.06); }
+.login-box { max-width: 360px; margin: 100px auto; background: #fff; padding: 32px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,.08); }
+.login-box h2 { margin-top: 0; }
+.login-box input { width: 100%; margin: 8px 0; }
+.login-box button { width: 100%; padding: 10px; margin-top: 10px; }
+.error { color: #ff4d4f; font-size: 13px; }

@@ -1,0 +1,48 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-and-package:
+    name: 构建部署包
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.13' }
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+
+      - name: Install & test backend
+        working-directory: backend
+        run: |
+          pip install -r requirements.txt
+          python -m app.seed
+          pytest -q
+
+      - name: Build admin-web
+        working-directory: admin-web
+        run: npm ci && npm run build
+
+      - name: Build student-web
+        working-directory: student-web
+        run: npm ci && npm run build
+
+      - name: Package release
+        run: |
+          mkdir -p release
+          cp -r backend release/
+          cp -r admin-web/dist release/admin-web
+          cp -r student-web/dist release/student-web
+          cp -r rfcs release/
+          cp README.md release/
+          tar -czf release.tar.gz release
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release
+          path: release.tar.gz

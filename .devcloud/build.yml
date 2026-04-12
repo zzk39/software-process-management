@@ -1,0 +1,37 @@
+# DevCloud 编译构建任务配置
+# 在 DevCloud 控制台 → 编译构建 → 新建任务，选择以下步骤：
+
+version: '2.0'
+steps:
+  BUILD:
+    - checkout:
+        name: 拉取代码
+
+    - python:
+        name: 后端测试
+        version: 3.13
+        inputs:
+          - pip install -r backend/requirements.txt
+          - cd backend && python -m app.seed
+          - cd backend && pytest -q --junitxml=backend/report.xml
+
+    - npm:
+        name: 构建管理端
+        version: 20
+        inputs:
+          - cd admin-web && npm ci && npm run build
+
+    - npm:
+        name: 构建学生端
+        version: 20
+        inputs:
+          - cd student-web && npm ci && npm run build
+
+    - upload_artifact:
+        name: 打包产物
+        inputs:
+          - backend/
+          - admin-web/dist
+          - student-web/dist
+          - rfcs/
+          - README.md
