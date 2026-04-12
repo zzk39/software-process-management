@@ -19,7 +19,7 @@
 - **修复**: 
   - 后端新增 `POST /api/admin/rooms/{id}/reactivate`（文件 `backend/app/api/admin/rooms.py`）
   - 前端在操作列按 `is_active` 分支显示"停用 / 启用"两种按钮
-  - commit: `<见 push 后补充>`
+  - commit: `3f418a4`
 - **预防**:
   - 在 RFC-011 验收标准中新增 AC："停用的自习室可通过 reactivate 接口恢复为开放，且对应学生端立即可见"
   - 在 `backend/tests/test_admin.py::test_admin_room_crud` 中追加 reactivate 步骤，保证下次测试能覆盖
