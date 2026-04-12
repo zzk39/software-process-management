@@ -91,6 +91,7 @@ if room.checkin_code_date != today:
 - [x] 自动违约后 User.violation_count +1（smoke test）
 - [ ] `/api/rooms/{id}` 返回 `daily_checkin_code_date == today`
 - [ ] 停用 Room 后，受影响 PENDING 预约在 1 分钟内被 notify
+- [x] 本地 `make run-backend` 启动后，uvicorn 不得因 `study_seat.db` 或 `.venv/` 变更而自动重启（`--reload-dir app` 限定监听范围，避免 scheduler 每分钟 `commit` 触发重启死循环）
 
 ## 7. 非目标
 
