@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     late_remind_minutes: int = 10
 
     cors_origins: list[str] = [
-        "http://localhost:5173",  # admin-web
+        "http://localhost:5273",  # admin-web
         "http://localhost:5174",  # student-web
     ]
 

@@ -7,7 +7,7 @@ help:
 	@echo "  make test           运行后端 pytest"
 	@echo "  make build          构建两个前端 dist"
 	@echo "  make run-backend    启动后端 8000"
-	@echo "  make run-admin      启动管理端 5173"
+	@echo "  make run-admin      启动管理端 5273"
 	@echo "  make run-student    启动学生端 5174"
 	@echo "  make all            一键冒烟：seed + test + build"
 	@echo "  make clean          清理产物"

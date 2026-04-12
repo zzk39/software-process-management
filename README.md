@@ -7,7 +7,7 @@
 ```
 software/
 ├── backend/           # FastAPI + SQLite
-├── admin-web/         # 管理端 Vue3（端口 5173）
+├── admin-web/         # 管理端 Vue3（端口 5273）
 ├── student-web/       # 学生端 Vue3（端口 5174）
 ├── docs/
 │   └── ITERATION_1.md # 第一阶段任务看板（按人分工）
@@ -43,7 +43,7 @@ demo 账号：
 ```bash
 cd admin-web
 npm install
-npm run dev  # http://localhost:5173
+npm run dev  # http://localhost:5273
 ```
 
 ### 3. 学生端
@@ -91,7 +91,7 @@ make seed             # 重置 demo 数据
 make test             # pytest
 make build            # 前端 build
 make run-backend      # 启动后端 8000
-make run-admin        # 启动管理端 5173
+make run-admin        # 启动管理端 5273
 make run-student      # 启动学生端 5174
 make all              # seed + test + build
 make clean            # 清理
