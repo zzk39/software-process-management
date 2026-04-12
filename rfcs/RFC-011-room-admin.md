@@ -44,8 +44,8 @@ class Room:
 | GET | `/api/admin/rooms` | room.write / stat.view | B2.9 |
 | POST | `/api/admin/rooms` | room.write | B2.1-B2.6 |
 | PUT | `/api/admin/rooms/{id}` | room.write | B2.2-B2.6 |
-| POST | `/api/admin/rooms/{id}/deactivate` | room.write | B2.7 |
-| POST | `/api/admin/rooms/{id}/reactivate` | room.write | — |
+| DELETE | `/api/admin/rooms/{id}` | room.write | B2.7（软删 is_active=false） |
+| POST | `/api/admin/rooms/{id}/reactivate` | room.write | B2.7 反向操作，已实现 |
 | DELETE | `/api/admin/rooms/{id}` | room.write | B2.8（软删） |
 | GET | `/api/admin/rooms/{id}/stats` | stat.view | B2.10 |
 | POST | `/api/admin/rooms/{id}/rotate-code` | room.write | B2.11（手动刷新） |
@@ -63,6 +63,7 @@ class Room:
 - [x] POST 新增后学生端 `/api/rooms` 立即可见
 - [x] 设置 `department=计算机学院` 后，物理学院学生 `/api/rooms` 不可见
 - [x] 停用后学生端不可见，已有 PENDING 预约根据 RFC-019 策略处理
+- [x] 停用的自习室可通过 `POST /reactivate` 恢复为开放，且对应学生端立即可见（新增，Bug-2026-04-12-01）
 - [ ] `rotate-code` 会更新 `daily_checkin_code` 且 `checkin_code_date=today`
 - [ ] `/stats` 返回 `{total_seats, active_reservations, available_now}`
 

@@ -26,6 +26,12 @@ def test_admin_room_crud(app_client, admin_token):
     rooms = app_client.get("/api/admin/rooms", headers=auth(admin_token)).json()["data"]
     assert next(x for x in rooms if x["id"] == rid)["is_active"] is False
 
+    # 重新启用（Bug-2026-04-12-01）
+    r = app_client.post(f"/api/admin/rooms/{rid}/reactivate", headers=auth(admin_token))
+    assert r.status_code == 200
+    rooms = app_client.get("/api/admin/rooms", headers=auth(admin_token)).json()["data"]
+    assert next(x for x in rooms if x["id"] == rid)["is_active"] is True
+
 
 def test_admin_seat_create_and_list(app_client, admin_token):
     r = app_client.post("/api/admin/seats", headers=auth(admin_token),

@@ -21,7 +21,10 @@
           <td>{{ r.open_time }} - {{ r.close_time }}</td>
           <td>{{ r.department || '全校' }}</td>
           <td>{{ r.is_active ? '开放' : '停用' }}</td>
-          <td><button class="secondary" v-if="r.is_active" @click="remove(r.id)">停用</button></td>
+          <td>
+            <button class="secondary" v-if="r.is_active" @click="remove(r.id)">停用</button>
+            <button v-else @click="reactivate(r.id)">启用</button>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -46,6 +49,10 @@ async function create() {
 }
 async function remove(id) {
   await http.delete(`/admin/rooms/${id}`)
+  load()
+}
+async function reactivate(id) {
+  await http.post(`/admin/rooms/${id}/reactivate`)
   load()
 }
 onMounted(load)
