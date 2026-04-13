@@ -31,6 +31,26 @@ def create(payload: SeatCreate, db: Session = Depends(get_db)):
     return ok(SeatOut.model_validate(s))
 
 
+@router.put("/{sid}", response_model=ApiResponse)
+def update(sid: int, payload: SeatCreate, db: Session = Depends(get_db)):
+    """B3.3-B3.4：编辑座位属性（编号、插座、靠窗），保持 (room_id, code) 唯一。"""
+    s = db.query(Seat).filter(Seat.id == sid).first()
+    if not s:
+        raise HTTPException(404, "座位不存在")
+    dup = db.query(Seat).filter(
+        Seat.room_id == payload.room_id,
+        Seat.code == payload.code,
+        Seat.id != sid,
+    ).first()
+    if dup:
+        raise HTTPException(409, f"该自习室已存在编号 {payload.code}")
+    for k, v in payload.model_dump().items():
+        setattr(s, k, v)
+    db.commit()
+    db.refresh(s)
+    return ok(SeatOut.model_validate(s))
+
+
 @router.delete("/{sid}", response_model=ApiResponse)
 def deactivate(sid: int, db: Session = Depends(get_db)):
     s = db.query(Seat).filter(Seat.id == sid).first()

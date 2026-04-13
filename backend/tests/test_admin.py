@@ -56,6 +56,34 @@ def test_admin_seat_duplicate_code_rejected(app_client, admin_token):
     assert r3.status_code == 200
 
 
+def test_admin_seat_update(app_client, admin_token):
+    """RFC-012 B3.3-B3.4：编辑座位属性（编号、插座、靠窗）。"""
+    r = app_client.post("/api/admin/seats", headers=auth(admin_token),
+                        json={"room_id": 1, "code": "EDIT-SRC", "has_power": False, "near_window": False})
+    assert r.status_code == 200
+    sid = r.json()["data"]["id"]
+
+    # 正常编辑
+    r = app_client.put(f"/api/admin/seats/{sid}", headers=auth(admin_token),
+                       json={"room_id": 1, "code": "EDIT-DST", "has_power": True, "near_window": True})
+    assert r.status_code == 200, r.text
+    body = r.json()["data"]
+    assert body["code"] == "EDIT-DST" and body["has_power"] and body["near_window"]
+
+    # 改成与同 room 内另一行重复的 code → 409
+    r2 = app_client.post("/api/admin/seats", headers=auth(admin_token),
+                         json={"room_id": 1, "code": "EDIT-OTHER"})
+    assert r2.status_code == 200
+    r3 = app_client.put(f"/api/admin/seats/{sid}", headers=auth(admin_token),
+                        json={"room_id": 1, "code": "EDIT-OTHER"})
+    assert r3.status_code == 409
+
+    # 不存在的 id → 404
+    r4 = app_client.put("/api/admin/seats/999999", headers=auth(admin_token),
+                        json={"room_id": 1, "code": "X"})
+    assert r4.status_code == 404
+
+
 def test_admin_seat_deactivate_and_reactivate(app_client, admin_token):
     """Bug-2026-04-13-02：停用的座位必须可以重新启用"""
     r = app_client.post("/api/admin/seats", headers=auth(admin_token),

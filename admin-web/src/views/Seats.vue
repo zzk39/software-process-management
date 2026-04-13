@@ -34,14 +34,28 @@
         <tr v-for="s in seats" :key="s.id">
           <td>{{ s.id }}</td>
           <td>{{ roomName(s.room_id) }}</td>
-          <td>{{ s.code }}</td>
-          <td>{{ s.has_power ? '✓' : '' }}</td>
-          <td>{{ s.near_window ? '✓' : '' }}</td>
-          <td>{{ s.is_active ? '可用' : '停用' }}</td>
-          <td>
-            <button class="secondary" v-if="s.is_active" @click="remove(s.id)">停用</button>
-            <button v-else @click="reactivate(s.id)">启用</button>
-          </td>
+          <template v-if="editingId === s.id">
+            <td><input v-model="editForm.code" style="width:100px" /></td>
+            <td><input type="checkbox" v-model="editForm.has_power" /></td>
+            <td><input type="checkbox" v-model="editForm.near_window" /></td>
+            <td>{{ s.is_active ? '可用' : '停用' }}</td>
+            <td>
+              <button @click="saveEdit(s)">保存</button>
+              <button class="secondary" @click="cancelEdit">取消</button>
+              <div v-if="editError" style="color:#c00; margin-top:4px">{{ editError }}</div>
+            </td>
+          </template>
+          <template v-else>
+            <td>{{ s.code }}</td>
+            <td>{{ s.has_power ? '✓' : '' }}</td>
+            <td>{{ s.near_window ? '✓' : '' }}</td>
+            <td>{{ s.is_active ? '可用' : '停用' }}</td>
+            <td>
+              <button @click="startEdit(s)">编辑</button>
+              <button class="secondary" v-if="s.is_active" @click="remove(s.id)">停用</button>
+              <button v-else @click="reactivate(s.id)">启用</button>
+            </td>
+          </template>
         </tr>
       </tbody>
     </table>
@@ -58,6 +72,9 @@ const roomId = ref(null)        // 列表筛选
 const createRoomId = ref(null)  // 新增目标（与筛选解耦）
 const form = ref({ code: '', has_power: false, near_window: false })
 const createError = ref('')
+const editingId = ref(null)
+const editForm = ref({ code: '', has_power: false, near_window: false })
+const editError = ref('')
 
 function roomName(id) { return rooms.value.find(r => r.id === id)?.name || id }
 
@@ -78,5 +95,24 @@ async function create() {
 }
 async function remove(id) { await http.delete(`/admin/seats/${id}`); load() }
 async function reactivate(id) { await http.post(`/admin/seats/${id}/reactivate`); load() }
+function startEdit(s) {
+  editingId.value = s.id
+  editForm.value = { code: s.code, has_power: s.has_power, near_window: s.near_window }
+  editError.value = ''
+}
+function cancelEdit() {
+  editingId.value = null
+  editError.value = ''
+}
+async function saveEdit(s) {
+  editError.value = ''
+  try {
+    await http.put(`/admin/seats/${s.id}`, { ...editForm.value, room_id: s.room_id })
+    editingId.value = null
+    load()
+  } catch (e) {
+    editError.value = e.message
+  }
+}
 onMounted(async () => { await loadRooms(); await load() })
 </script>
