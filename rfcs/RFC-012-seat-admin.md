@@ -68,6 +68,7 @@ room_id,code,has_power,near_window
 - [x] `(room_id, code)` 重复提交返回 409
 - [x] 停用座位后，该座位不再出现在学生端 `/api/rooms/:id/seats`
 - [x] 停用的座位可通过 `POST /api/admin/seats/{id}/reactivate` 恢复可用，且管理端在 `is_active=false` 时展示"启用"按钮（Bug-2026-04-13-02）
+- [x] "为当前教室新增"按钮在未选择具体自习室或未填写座位编号时禁用，并在旁边给出明确提示，避免用户以为按钮失效（Bug-2026-04-13-03）
 - [ ] CSV 导入 100 条约 < 1s（SQLite，整批事务）
 - [ ] 已有 PENDING 预约的座位被停用时，RFC-019 自动触发通知+释放
 

@@ -82,3 +82,24 @@
   - `backend/tests/test_admin.py` 新增 `test_admin_seat_deactivate_and_reactivate`，对称覆盖 room 侧的 reactivate 测试
   - 约定：今后任何 `DELETE` 软删端点必须成对引入 `POST /{id}/reactivate`，前端按 `is_active` 双向渲染按钮（已在 room、seat 两处兑现）
 
+---
+
+## Bug-2026-04-13-03: 管理端"为当前教室新增"按钮没有响应
+
+- **RFC**: RFC-012（Story B3.1 为自习室登记座位）
+- **表现**: 管理端"座位管理"页面点击"为当前教室新增"按钮没有任何反应，用户以为按钮坏了。
+- **原因**:
+  1. `admin-web/src/views/Seats.vue` 的新增按钮用 `:disabled="!roomId"` 控制；页面初始加载时筛选下拉框默认为"全部"，`roomId=null`，按钮实际处于 **disabled** 状态
+  2. 按钮被禁用时没有任何视觉/文字提示，用户无法意识到"需要先在筛选器里选一个自习室"才能新增——筛选器被一岗两用（既控制列表过滤又决定新增目标教室）
+  3. 后端 `POST /api/admin/seats` 实际工作正常（curl 直调返回 200），属于纯前端 UX 缺陷
+  4. RFC-012 §5 只写了"筛选自习室 + 单条增删改"，未对"无自习室被选中时新增按钮的禁用态反馈"给出约定
+- **修复**:
+  - `admin-web/src/views/Seats.vue`：
+    - 扩展 disabled 条件到 `!roomId || !form.code`（未填编号时也不允许提交）
+    - 加 `title` 按状态给出悬浮提示
+    - 在按钮右侧追加红字提示 `← 请先选择一个自习室`，仅在 `!roomId` 时显示
+  - commit: （见本次提交）
+- **预防**:
+  - RFC-012 §6 新增 AC："新增按钮在未选择具体自习室或未填写座位编号时禁用，并在旁边给出明确提示"
+  - 约定：今后任何"依赖上游筛选器状态才能启用"的按钮，必须显式把禁用原因写在按钮旁（红字或 title 任一），不能只靠灰化
+

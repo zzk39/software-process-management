@@ -12,7 +12,12 @@
         <input v-model="form.code" placeholder="座位编号" />
         <label><input type="checkbox" v-model="form.has_power" />带插座</label>
         <label><input type="checkbox" v-model="form.near_window" />靠窗</label>
-        <button @click="create" :disabled="!roomId">为当前教室新增</button>
+        <button
+          @click="create"
+          :disabled="!roomId || !form.code"
+          :title="!roomId ? '请先在左侧选择一个自习室' : (!form.code ? '请先填写座位编号' : '')"
+        >为当前教室新增</button>
+        <span v-if="!roomId" style="color:#c00; margin-left:8px">← 请先选择一个自习室</span>
       </span>
     </div>
     <table>
