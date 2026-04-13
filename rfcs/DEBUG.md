@@ -138,7 +138,7 @@
   - 后端 `create()` 在入库前先 `db.query(Seat).filter(room_id==, code==).first()`，命中则 `HTTPException(409, "该自习室已存在编号 X")`
   - 前端 `Seats.vue::create` 包一层 try/catch，把后端 `message` 显示在新增区块下方红字 `createError`
   - 新增 `backend/tests/test_admin.py::test_admin_seat_duplicate_code_rejected` 覆盖同 room 重复 409 + 不同 room 允许复用 200
-  - commit: （见本次提交）
+  - commit: `1d717c0`
 - **预防**:
   - 已把"未实现的 [x]"补上测试，避免 RFC 与代码再次脱节
   - 后续如要提升到 DB 级唯一，需为 `Seat` 增加 `UniqueConstraint("room_id", "code")` 并写迁移；当前应用层守卫已足以阻断唯一写入点（仅管理员 API）
