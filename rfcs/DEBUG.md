@@ -123,3 +123,23 @@
   - RFC-012 §6 新增 AC："新增座位区块拥有独立的目标自习室下拉，不依赖列表过滤器"
   - 通用约定：管理端任何"新增"类表单都应显式包含所有必填字段的输入控件，禁止把筛选器状态隐式当成表单字段
 
+---
+
+## Bug-2026-04-13-05: 管理端同一自习室可重复创建相同编号座位
+
+- **RFC**: RFC-012（Story B3.2 配置唯一编号；§6 AC "`(room_id, code)` 重复提交返回 409"）
+- **表现**: 在同一自习室下用相同的 `code` 连续提交 `POST /api/admin/seats`，两次都返回 200，数据库里出现两条 `(room_id, code)` 完全相同的座位行。
+- **原因**:
+  1. `backend/app/api/admin/seats.py::create` 只做了 `Seat(**payload.model_dump())` + commit，未做任何唯一性校验
+  2. `backend/app/models/seat.py` 的 `Seat.code` 只有 `index=True`，没有 `UniqueConstraint("room_id", "code")`，数据库层也没有兜底
+  3. RFC-012 §3 写了 "'编号唯一' 在 `(room_id, code)` 上建 UNIQUE"、§6 也把"重复提交返回 409"标成 [x]，但这条 AC 一直是 **声明过但没实现**，也没有对应测试保护
+  4. `admin-web/src/views/Seats.vue::create` 没有 try/catch，即便后端返回 4xx 也会被 axios 包成 rejected Promise 静默吞掉，用户看不到任何提示
+- **修复**:
+  - 后端 `create()` 在入库前先 `db.query(Seat).filter(room_id==, code==).first()`，命中则 `HTTPException(409, "该自习室已存在编号 X")`
+  - 前端 `Seats.vue::create` 包一层 try/catch，把后端 `message` 显示在新增区块下方红字 `createError`
+  - 新增 `backend/tests/test_admin.py::test_admin_seat_duplicate_code_rejected` 覆盖同 room 重复 409 + 不同 room 允许复用 200
+  - commit: （见本次提交）
+- **预防**:
+  - 已把"未实现的 [x]"补上测试，避免 RFC 与代码再次脱节
+  - 后续如要提升到 DB 级唯一，需为 `Seat` 增加 `UniqueConstraint("room_id", "code")` 并写迁移；当前应用层守卫已足以阻断唯一写入点（仅管理员 API）
+

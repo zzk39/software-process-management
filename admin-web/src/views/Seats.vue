@@ -26,6 +26,7 @@
         :title="!createRoomId ? '请选择目标自习室' : (!form.code ? '请填写座位编号' : '')"
       >新增</button>
       <span v-if="!createRoomId" style="color:#c00; margin-left:8px">← 请先选择目标自习室</span>
+      <div v-if="createError" style="color:#c00; margin-top:8px">{{ createError }}</div>
     </div>
     <table>
       <thead><tr><th>ID</th><th>教室</th><th>编号</th><th>插座</th><th>靠窗</th><th>状态</th><th>操作</th></tr></thead>
@@ -56,6 +57,7 @@ const seats = ref([])
 const roomId = ref(null)        // 列表筛选
 const createRoomId = ref(null)  // 新增目标（与筛选解耦）
 const form = ref({ code: '', has_power: false, near_window: false })
+const createError = ref('')
 
 function roomName(id) { return rooms.value.find(r => r.id === id)?.name || id }
 
@@ -65,9 +67,14 @@ async function load() {
   seats.value = (await http.get(`/admin/seats${q}`)).data
 }
 async function create() {
-  await http.post('/admin/seats', { ...form.value, room_id: createRoomId.value })
-  form.value = { code: '', has_power: false, near_window: false }
-  load()
+  createError.value = ''
+  try {
+    await http.post('/admin/seats', { ...form.value, room_id: createRoomId.value })
+    form.value = { code: '', has_power: false, near_window: false }
+    load()
+  } catch (e) {
+    createError.value = e.message
+  }
 }
 async function remove(id) { await http.delete(`/admin/seats/${id}`); load() }
 async function reactivate(id) { await http.post(`/admin/seats/${id}/reactivate`); load() }

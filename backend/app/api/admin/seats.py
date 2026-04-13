@@ -21,6 +21,9 @@ def list_all(room_id: int | None = None, db: Session = Depends(get_db)):
 
 @router.post("", response_model=ApiResponse)
 def create(payload: SeatCreate, db: Session = Depends(get_db)):
+    dup = db.query(Seat).filter(Seat.room_id == payload.room_id, Seat.code == payload.code).first()
+    if dup:
+        raise HTTPException(409, f"该自习室已存在编号 {payload.code}")
     s = Seat(**payload.model_dump())
     db.add(s)
     db.commit()

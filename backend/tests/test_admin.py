@@ -43,6 +43,19 @@ def test_admin_seat_create_and_list(app_client, admin_token):
     assert any(s["id"] == sid for s in seats)
 
 
+def test_admin_seat_duplicate_code_rejected(app_client, admin_token):
+    """Bug-2026-04-13-05 / RFC-012 §6：同一自习室不允许重复 code。"""
+    payload = {"room_id": 1, "code": "DUP-CODE-01", "has_power": False, "near_window": False}
+    r1 = app_client.post("/api/admin/seats", headers=auth(admin_token), json=payload)
+    assert r1.status_code == 200
+    r2 = app_client.post("/api/admin/seats", headers=auth(admin_token), json=payload)
+    assert r2.status_code == 409
+    # 不同自习室可以复用同一个 code
+    r3 = app_client.post("/api/admin/seats", headers=auth(admin_token),
+                         json={**payload, "room_id": 2})
+    assert r3.status_code == 200
+
+
 def test_admin_seat_deactivate_and_reactivate(app_client, admin_token):
     """Bug-2026-04-13-02：停用的座位必须可以重新启用"""
     r = app_client.post("/api/admin/seats", headers=auth(admin_token),
