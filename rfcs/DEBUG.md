@@ -57,7 +57,7 @@
   4. RFC-004 §4 的入参示例是 `"2026-04-12T19:00:00"`（naive），但 §5 没有明确禁止前端把本地时间转成 ISO UTC，AC 也未覆盖"前端入参时区约定"，所以此前没被测到
 - **修复**:
   - `student-web/src/views/RoomDetail.vue:75` 将 `new Date(startAt.value).toISOString()` 改为 `` `${startAt.value}:00` ``，直接上送 `datetime-local` 的原始 naive 本地时间
-  - commit: （见本次提交）
+  - commit: `9a8b353`
 - **预防**:
   - 在 RFC-004 §5 前端交互小节明确禁止 `.toISOString()`，并说明原因
   - 在 RFC-004 §6 验收标准新增 AC："前端提交的 `start_at` 为 naive 本地时间（不含 `Z`/时区偏移）"
