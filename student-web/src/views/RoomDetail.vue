@@ -72,7 +72,7 @@ async function submit() {
   try {
     await http.post('/reservations', {
       seat_id: selectedSeat.value.id,
-      start_at: new Date(startAt.value).toISOString(),
+      start_at: `${startAt.value}:00`,
       hours: hours.value
     })
     success.value = true
