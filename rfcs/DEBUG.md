@@ -76,7 +76,7 @@
 - **修复**:
   - 后端新增 `POST /api/admin/seats/{id}/reactivate`（`backend/app/api/admin/seats.py`）
   - 前端操作列按 `is_active` 分支显示"停用 / 启用"两种按钮
-  - commit: （见本次提交）
+  - commit: `484699c`
 - **预防**:
   - RFC-012 §4 补 `POST /api/admin/seats/{id}/reactivate`；§6 新增 AC："停用的座位可通过 reactivate 接口恢复，管理端在 is_active=false 时展示'启用'按钮"
   - `backend/tests/test_admin.py` 新增 `test_admin_seat_deactivate_and_reactivate`，对称覆盖 room 侧的 reactivate 测试
