@@ -43,6 +43,26 @@ def test_admin_seat_create_and_list(app_client, admin_token):
     assert any(s["id"] == sid for s in seats)
 
 
+def test_admin_seat_deactivate_and_reactivate(app_client, admin_token):
+    """Bug-2026-04-13-02：停用的座位必须可以重新启用"""
+    r = app_client.post("/api/admin/seats", headers=auth(admin_token),
+                        json={"room_id": 1, "code": "TEST-REACT-01", "has_power": False, "near_window": False})
+    assert r.status_code == 200
+    sid = r.json()["data"]["id"]
+
+    # 停用
+    r = app_client.delete(f"/api/admin/seats/{sid}", headers=auth(admin_token))
+    assert r.status_code == 200
+    seats = app_client.get("/api/admin/seats?room_id=1", headers=auth(admin_token)).json()["data"]
+    assert next(s for s in seats if s["id"] == sid)["is_active"] is False
+
+    # 重新启用
+    r = app_client.post(f"/api/admin/seats/{sid}/reactivate", headers=auth(admin_token))
+    assert r.status_code == 200
+    seats = app_client.get("/api/admin/seats?room_id=1", headers=auth(admin_token)).json()["data"]
+    assert next(s for s in seats if s["id"] == sid)["is_active"] is True
+
+
 def test_admin_reservations_query(app_client, admin_token):
     r = app_client.get("/api/admin/reservations", headers=auth(admin_token))
     assert r.status_code == 200

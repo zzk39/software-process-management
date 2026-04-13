@@ -36,3 +36,14 @@ def deactivate(sid: int, db: Session = Depends(get_db)):
     s.is_active = False
     db.commit()
     return ok()
+
+
+@router.post("/{sid}/reactivate", response_model=ApiResponse)
+def reactivate(sid: int, db: Session = Depends(get_db)):
+    """B3.5 反向：把停用的座位重新启用（修复 Bug-2026-04-13-02）"""
+    s = db.query(Seat).filter(Seat.id == sid).first()
+    if not s:
+        raise HTTPException(404, "座位不存在")
+    s.is_active = True
+    db.commit()
+    return ok()

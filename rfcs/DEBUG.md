@@ -63,3 +63,22 @@
   - 在 RFC-004 §6 验收标准新增 AC："前端提交的 `start_at` 为 naive 本地时间（不含 `Z`/时区偏移）"
   - 现有 `backend/tests/test_reservations.py` 已全部使用 naive ISO 格式，保证后端契约被覆盖；前端后续若新增预约入口需遵循同一约定
 
+---
+
+## Bug-2026-04-13-02: 管理端座位停用后无法重新启用
+
+- **RFC**: RFC-012（Story B3.5 临时停用）
+- **表现**: 管理端"座位管理"页面点击"停用"后，该行状态变为"停用"，但操作列没有"启用"按钮，管理员无法把座位恢复为可用。与 Bug-2026-04-12-01（自习室）同构。
+- **原因**:
+  1. 后端 `backend/app/api/admin/seats.py` 仅实现 `DELETE /api/admin/seats/{id}`（软删→ `is_active=false`），未提供反向 reactivate 端点
+  2. 前端 `admin-web/src/views/Seats.vue` 操作列只在 `s.is_active=true` 时显示"停用"按钮，没有"启用"按钮
+  3. RFC-012 §4 API 表格漏了 reactivate 接口；§6 AC 只覆盖"停用后不可见"，没保护"启用能力存在"——这正是 Bug-2026-04-12-01 的预防条款在 seat 维度的遗漏，说明当时只补了 room 一份
+- **修复**:
+  - 后端新增 `POST /api/admin/seats/{id}/reactivate`（`backend/app/api/admin/seats.py`）
+  - 前端操作列按 `is_active` 分支显示"停用 / 启用"两种按钮
+  - commit: （见本次提交）
+- **预防**:
+  - RFC-012 §4 补 `POST /api/admin/seats/{id}/reactivate`；§6 新增 AC："停用的座位可通过 reactivate 接口恢复，管理端在 is_active=false 时展示'启用'按钮"
+  - `backend/tests/test_admin.py` 新增 `test_admin_seat_deactivate_and_reactivate`，对称覆盖 room 侧的 reactivate 测试
+  - 约定：今后任何 `DELETE` 软删端点必须成对引入 `POST /{id}/reactivate`，前端按 `is_active` 双向渲染按钮（已在 room、seat 两处兑现）
+

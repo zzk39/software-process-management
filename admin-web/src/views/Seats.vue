@@ -25,7 +25,10 @@
           <td>{{ s.has_power ? '✓' : '' }}</td>
           <td>{{ s.near_window ? '✓' : '' }}</td>
           <td>{{ s.is_active ? '可用' : '停用' }}</td>
-          <td><button class="secondary" v-if="s.is_active" @click="remove(s.id)">停用</button></td>
+          <td>
+            <button class="secondary" v-if="s.is_active" @click="remove(s.id)">停用</button>
+            <button v-else @click="reactivate(s.id)">启用</button>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -54,5 +57,6 @@ async function create() {
   load()
 }
 async function remove(id) { await http.delete(`/admin/seats/${id}`); load() }
+async function reactivate(id) { await http.post(`/admin/seats/${id}/reactivate`); load() }
 onMounted(async () => { await loadRooms(); await load() })
 </script>
