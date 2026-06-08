@@ -51,7 +51,7 @@ echo "→ 浏览自习室"
 curl -sf http://localhost:8000/api/rooms -H "Authorization: Bearer $TOKEN" | python3 -m json.tool | head -20
 
 echo "→ 创建预约（明天 10:00, 2h, 座位 1）"
-START=$(python3 -c "from datetime import datetime, timedelta; print((datetime.utcnow()+timedelta(days=1)).replace(hour=10,minute=0,second=0,microsecond=0).isoformat())")
+START=$(python3 -c "from datetime import datetime, timedelta, UTC; print((datetime.now(UTC)+timedelta(days=1)).replace(hour=10,minute=0,second=0,microsecond=0,tzinfo=None).isoformat())")
 RESV_RES=$(curl -sf -X POST http://localhost:8000/api/reservations \
     -H "Authorization: Bearer $TOKEN" \
     -H "Content-Type: application/json" \
